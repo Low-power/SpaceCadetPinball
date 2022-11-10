@@ -10,11 +10,11 @@ enum class BitmapTypes : uint8_t
 
 struct ColorRgba
 {
-	static constexpr ColorRgba Black() { return ColorRgba{ 0, 0, 0, 255 }; }
-	static constexpr ColorRgba White() { return ColorRgba{ 255, 255, 255, 255 }; }
-	static constexpr ColorRgba Red() { return ColorRgba{ 255, 0, 0, 255 }; }
-	static constexpr ColorRgba Green() { return ColorRgba{ 0, 255,0, 255 }; }
-	static constexpr ColorRgba Blue() { return ColorRgba{ 0, 0, 255, 255 }; }
+	static constexpr ColorRgba Black() { return ColorRgba(0, 0, 0, 255); }
+	static constexpr ColorRgba White() { return ColorRgba(255, 255, 255, 255); }
+	static constexpr ColorRgba Red() { return ColorRgba(255, 0, 0, 255); }
+	static constexpr ColorRgba Green() { return ColorRgba(0, 255,0, 255); }
+	static constexpr ColorRgba Blue() { return ColorRgba(0, 0, 255, 255); }
 
 	uint32_t Color;
 
@@ -40,7 +40,11 @@ struct ColorRgba
 	void SetBlue(uint8_t val) { Color = (Color & (~(0xffu << blueOffset))) | (val << blueOffset); }
 
 private:
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	static const unsigned alphaOffset = 0 * 8, redOffset = 1 * 8, greenOffset = 2 * 8, blueOffset = 3 * 8;
+#else
 	static const unsigned alphaOffset = 3 * 8, redOffset = 2 * 8, greenOffset = 1 * 8, blueOffset = 0 * 8;
+#endif
 };
 
 static_assert(sizeof(ColorRgba) == 4, "Wrong size of RGBA color");

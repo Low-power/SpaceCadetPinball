@@ -1,4 +1,4 @@
-CXXFLAGS += -Wall -Os -fno-common $(CPPFLAGS)
+CXXFLAGS += -Wall -Os -fno-common -std=gnu++11 $(CPPFLAGS)
 
 OBJECTS := \
 	SpaceCadetPinball/control.o \

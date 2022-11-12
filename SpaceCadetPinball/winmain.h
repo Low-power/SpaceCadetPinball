@@ -76,7 +76,7 @@ public:
 
 	static int WinMain(LPCSTR lpCmdLine);
 	static int event_handler(const SDL_Event* event);
-	[[ noreturn ]] static void memalloc_failure();
+	static void __attribute__((__noreturn__)) memalloc_failure();
 	static int ProcessWindowMessages();
 	static void a_dialog();
 	static void end_pause();

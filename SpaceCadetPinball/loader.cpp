@@ -285,8 +285,7 @@ float loader::query_float_attribute(int groupIndex, int groupIndexOffset, int fi
 			return floatArr[1];
 	}
 
-	if (!isnan(defVal))
-		return defVal;
+	if (!std::isnan(defVal)) return defVal;
 	error(13, 22);
 	return NAN;
 }

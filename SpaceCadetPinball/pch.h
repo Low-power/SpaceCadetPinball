@@ -10,7 +10,7 @@
 #define PCH_H
 
 
-// GCC does not have *_s functions
+// UNIX does not have *_s functions
 #define _CRT_SECURE_NO_WARNINGS
 
 // TODO: add headers that you want to pre-compile here

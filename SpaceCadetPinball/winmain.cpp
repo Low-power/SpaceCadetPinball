@@ -337,15 +337,16 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 			}
 
 			auto updateEnd = Clock::now();
-			auto targetTimeDelta = TargetFrameTime - DurationMs(updateEnd - frameStart) - sleepRemainder;
+			DurationMs targetTimeDelta = TargetFrameTime - DurationMs(updateEnd - frameStart) - sleepRemainder;
 
 			TimePoint frameEnd;
 			if (targetTimeDelta > DurationMs::zero() && !Options.UncappedUpdatesPerSecond)
 			{
-				if (Options.HybridSleep)
+				if (Options.HybridSleep) {
 					HybridSleep(targetTimeDelta);
-				else
-					std::this_thread::sleep_for(targetTimeDelta);
+				} else {
+					SDL_Delay(targetTimeDelta.count());
+				}
 				frameEnd = Clock::now();
 			}
 			else
@@ -1129,7 +1130,7 @@ void winmain::HybridSleep(DurationMs sleepTarget)
 	while (sleepTarget > SpinThreshold)
 	{
 		auto start = Clock::now();
-		std::this_thread::sleep_for(DurationMs(1));
+		SDL_Delay(1);
 		auto end = Clock::now();
 
 		auto actualDuration = DurationMs(end - start);

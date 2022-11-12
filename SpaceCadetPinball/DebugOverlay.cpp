@@ -273,7 +273,7 @@ void DebugOverlay::DrawBallDepthSteps()
 
 void DebugOverlay::DrawCicleType(circle_type& circle)
 {
-	vector2 linePt{ circle.Center.X + sqrt(circle.RadiusSq), circle.Center.Y };
+	vector2 linePt = { static_cast<float>(circle.Center.X + sqrt(circle.RadiusSq)), static_cast<float>(circle.Center.Y) };
 	auto pt1 = proj::xform_to_2d(circle.Center);
 	auto pt2 = proj::xform_to_2d(linePt);
 	auto radius = abs(pt2.X - pt1.X);

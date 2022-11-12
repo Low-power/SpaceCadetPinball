@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "options.h"
-
+#include <sstream>
 #include "fullscrn.h"
 #include "midi.h"
 #include "pb.h"
@@ -174,13 +174,19 @@ void options::uninit()
 
 int options::get_int(LPCSTR lpValueName, int defaultValue)
 {
-	auto value = GetSetting(lpValueName, std::to_string(defaultValue));
-	return std::stoi(value);
+	const std::string &value = GetSetting(lpValueName, std::string());
+	if(value.empty()) {
+		set_int(lpValueName, defaultValue);
+		return defaultValue;
+	}
+	return std::atoi(value.c_str());
 }
 
 void options::set_int(LPCSTR lpValueName, int data)
 {
-	SetSetting(lpValueName, std::to_string(data));
+	std::ostringstream s;
+	s << data;
+	SetSetting(lpValueName, s.str());
 }
 
 std::string options::get_string(LPCSTR lpValueName, LPCSTR defaultValue)
@@ -195,33 +201,46 @@ void options::set_string(LPCSTR lpValueName, LPCSTR value)
 
 float options::get_float(LPCSTR lpValueName, float defaultValue)
 {
-	auto value = GetSetting(lpValueName, std::to_string(defaultValue));
-	return std::stof(value);
+	const std::string &value = GetSetting(lpValueName, std::string());
+	if(value.empty()) {
+		set_float(lpValueName, defaultValue);
+		return defaultValue;
+	}
+	return std::atof(value.c_str());
 }
 
 void options::set_float(LPCSTR lpValueName, float data)
 {
-	SetSetting(lpValueName, std::to_string(data));
+	std::ostringstream s;
+	s << data;
+	SetSetting(lpValueName, s.str());
 }
 
 void options::GetInput(const std::string& rowName, GameInput (&defaultValues)[3])
 {
-	for (auto i = 0u; i <= 2; i++)
+	std::ostringstream s;
+	for (int i = 0; i <= 2; i++)
 	{
-		auto name = rowName + " " + std::to_string(i);
+		s.str(std::string());
+		s << rowName << " " << i;
+		const std::string &name = s.str();
 		auto inputType = static_cast<InputTypes>(get_int((name + " type").c_str(), -1));
 		auto input = get_int((name + " input").c_str(), -1);
-		if (inputType <= InputTypes::GameController && input != -1)
+		if (inputType <= InputTypes::GameController && input != -1) {
 			defaultValues[i] = {inputType, input};
+		}
 	}
 }
 
 void options::SetInput(const std::string& rowName, GameInput (&values)[3])
 {
-	for (auto i = 0u; i <= 2; i++)
+	std::ostringstream s;
+	for (int i = 0; i <= 2; i++)
 	{
 		auto input = values[i];
-		auto name = rowName + " " + std::to_string(i);
+		s.str(std::string());
+		s << rowName << " " << i;
+		const std::string &name = s.str();
 		set_int((name + " type").c_str(), static_cast<int>(input.Type));
 		set_int((name + " input").c_str(), input.Value);
 	}
@@ -389,6 +408,7 @@ void options::RenderControlDialog()
 					}
 					else
 					{
+						std::ostringstream s;
 						std::string tmp;
 						const char* keyName;
 						switch (ctrl.Type)
@@ -397,10 +417,13 @@ void options::RenderControlDialog()
 							keyName = SDL_GetKeyName(ctrl.Value);
 							break;
 						case InputTypes::Mouse:
-							if (ctrl.Value >= SDL_BUTTON_LEFT && ctrl.Value <= SDL_BUTTON_X2)
+							if (ctrl.Value >= SDL_BUTTON_LEFT && ctrl.Value <= SDL_BUTTON_X2) {
 								keyName = mouseButtons[ctrl.Value];
-							else
-								keyName = (tmp += "Mouse " + std::to_string(ctrl.Value)).c_str();
+							} else {
+								s << "Mouse " << ctrl.Value;
+								tmp = s.str();
+								keyName = tmp.c_str();
+							}
 							break;
 						case InputTypes::GameController:
 							keyName = SDL_GameControllerGetStringForButton(
@@ -410,10 +433,13 @@ void options::RenderControlDialog()
 						default:
 							keyName = "Unused";
 						}
-						if (!keyName || !keyName[0])
+						if (!keyName || !keyName[0]) {
 							keyName = "Unknown key";
-						if (ImGui::Button((std::string{keyName} + "##" + std::to_string(index++)).c_str(),
-						                  ImVec2(-1, 0)))
+						}
+						s.str(std::string());
+						s << keyName << "##" << index++;
+						tmp = s.str();
+						if (ImGui::Button(tmp.c_str(), ImVec2(-1, 0)))
 						{
 							ControlWaitingForInput = &ctrl;
 						}

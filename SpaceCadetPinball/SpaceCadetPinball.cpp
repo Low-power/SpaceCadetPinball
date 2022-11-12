@@ -17,20 +17,10 @@ int MainActual(LPCSTR lpCmdLine)
 	return returnCode;
 }
 
-int main(int argc, char* argv[])
-{
-	std::string cmdLine;
-	for (int i = 1; i < argc; i++)
-		cmdLine += argv[i];
-
-	return MainActual(cmdLine.c_str());
-}
-
 #if _WIN32
 #include <windows.h>
 
-// Windows subsystem main
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	return MainActual(lpCmdLine);
 }
@@ -53,6 +43,18 @@ FILE* fopenu(const char* path, const char* opt)
 
 	return fileHandle;
 }
+
+#else
+
+int main(int argc, char* argv[])
+{
+	std::string cmdLine;
+	for (int i = 1; i < argc; i++)
+		cmdLine += argv[i];
+
+	return MainActual(cmdLine.c_str());
+}
+
 #endif
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

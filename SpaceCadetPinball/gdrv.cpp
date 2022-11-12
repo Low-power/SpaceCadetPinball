@@ -134,7 +134,11 @@ void gdrv_bitmap8::CreateTexture(const char* scaleHint, int access)
 	Texture = SDL_CreateTexture
 	(
 		winmain::Renderer,
-		SDL_PIXELFORMAT_BGRA32,
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		SDL_PIXELFORMAT_BGRA8888,
+#else
+		SDL_PIXELFORMAT_ARGB8888,
+#endif
 		access,
 		Width, Height
 	);

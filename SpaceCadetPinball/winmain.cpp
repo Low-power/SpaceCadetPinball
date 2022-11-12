@@ -922,7 +922,7 @@ int winmain::event_handler(const SDL_Event* event)
 		switch (event->window.event)
 		{
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
-		case SDL_WINDOWEVENT_TAKE_FOCUS:
+		//case SDL_WINDOWEVENT_TAKE_FOCUS:
 		case SDL_WINDOWEVENT_SHOWN:
 			activated = true;
 			Sound::Activate();

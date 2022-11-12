@@ -204,7 +204,13 @@ namespace
 
 		SDL_Texture* MakeTexture(int width, int height)
 		{
-			SDL_Texture* texture = SDL_CreateTexture(Renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, width, height);
+			SDL_Texture *texture = SDL_CreateTexture(Renderer,
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+				SDL_PIXELFORMAT_RGBA8888,
+#else
+				SDL_PIXELFORMAT_ABGR8888,
+#endif
+				SDL_TEXTUREACCESS_TARGET, width, height);
 			SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 			return texture;
 		}

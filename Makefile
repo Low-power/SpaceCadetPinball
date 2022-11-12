@@ -72,7 +72,7 @@ OBJECTS := \
 	SpaceCadetPinball/DebugOverlay.o
 
 bin/SpaceCadetPinball:	$(OBJECTS)
-	$(CXX) $(OBJECTS) -o $@ -l SDL2 -l SDL2_mixer
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@ -l SDL2 -l SDL2_mixer $(LIBS)
 
 clean:
 	rm -f $(OBJECTS) bin/SpaceCadetPinball

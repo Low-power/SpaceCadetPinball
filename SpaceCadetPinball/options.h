@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include <string>
-#include <SDL2/SDL_mixer.h>
+#include <SDL_mixer.h>
 
 enum class Msg : int;
 

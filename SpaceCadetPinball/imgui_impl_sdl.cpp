@@ -79,6 +79,10 @@ struct ImGui_ImplSDL2_Data
     SDL_Cursor* MouseCursors[ImGuiMouseCursor_COUNT];
     char*       ClipboardTextData;
     bool        MouseCanUseGlobalState;
+#if 0
+    bool        ShouldWorkaroundGlobalMousePosIssue;
+#endif
+    bool        Touched;
 
     ImGui_ImplSDL2_Data()   { memset(this, 0, sizeof(*this)); }
 };
@@ -119,28 +123,45 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
 
     switch (event->type)
     {
-    case SDL_MOUSEWHEEL:
-        {
+        case SDL_MOUSEWHEEL:
             if (event->wheel.x > 0) io.MouseWheelH += 1;
             if (event->wheel.x < 0) io.MouseWheelH -= 1;
             if (event->wheel.y > 0) io.MouseWheel += 1;
             if (event->wheel.y < 0) io.MouseWheel -= 1;
             return true;
-        }
-    case SDL_MOUSEBUTTONDOWN:
-        {
+        case SDL_MOUSEBUTTONDOWN:
             if (event->button.button == SDL_BUTTON_LEFT) { bd->MousePressed[0] = true; }
             if (event->button.button == SDL_BUTTON_RIGHT) { bd->MousePressed[1] = true; }
             if (event->button.button == SDL_BUTTON_MIDDLE) { bd->MousePressed[2] = true; }
             return true;
-        }
-    case SDL_TEXTINPUT:
-        {
+        case SDL_MOUSEMOTION:
+            bd->Touched = false;
+            return false;
+        case SDL_FINGERDOWN:
+            bd->MousePressed[0] = true;
+            // Mark this touch event so that SDL_GetGlobalMouseState(3) won't
+            // be used afterward, to avoid a bug in older versions of SDL2.
+            bd->Touched = true;
+#if 0
+            if(bd->ShouldWorkaroundGlobalMousePosIssue) {
+                IM_ASSERT(bd->MouseCanUseGlobalState);
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                //SDL_WarpMouseInWindow(bd->Window, x, y);
+                int window_x, window_y;
+                SDL_GetWindowPosition(bd->Window, &window_x, &window_y);
+                SDL_WarpMouseGlobal(window_x + x, window_y + y);
+            }
+#endif
+            return true;
+        case SDL_FINGERMOTION:
+            bd->Touched = true;
+            return false;
+        case SDL_TEXTINPUT:
             io.AddInputCharactersUTF8(event->text.text);
             return true;
-        }
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
         {
             int key = event->key.keysym.scancode;
             IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
@@ -155,14 +176,13 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
 #endif
             return true;
         }
-    case SDL_WINDOWEVENT:
-        {
-            if (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+        case SDL_WINDOWEVENT:
+            if (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
                 io.AddFocusEvent(true);
-            else if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+            } else if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
                 io.AddFocusEvent(false);
+            }
             return true;
-        }
     }
     return false;
 }
@@ -172,19 +192,38 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.BackendPlatformUserData == NULL && "Already initialized a platform backend!");
 
+    ImGui_ImplSDL2_Data *bd = IM_NEW(ImGui_ImplSDL2_Data)();
+#if 0
+    bd->ShouldWorkaroundGlobalMousePosIssue = false;
+#endif
+
     // Check and store if we are on a SDL backend that supports global mouse position
     // ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
     bool mouse_can_use_global_state = false;
 #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
     const char* sdl_backend = SDL_GetCurrentVideoDriver();
     const char* global_mouse_whitelist[] = { "windows", "cocoa", "x11", "DIVE", "VMAN" };
-    for (int n = 0; n < IM_ARRAYSIZE(global_mouse_whitelist); n++)
-        if (strncmp(sdl_backend, global_mouse_whitelist[n], strlen(global_mouse_whitelist[n])) == 0)
+#if 0
+    const char *global_mouse_pos_lag_behind_touch_event[] = { "windows", "x11" };
+#endif
+    for (int n = 0; n < IM_ARRAYSIZE(global_mouse_whitelist); n++) {
+        if (strncmp(sdl_backend, global_mouse_whitelist[n], strlen(global_mouse_whitelist[n])) == 0) {
             mouse_can_use_global_state = true;
+#if 0
+            for(int j = 0; j < IM_ARRAYSIZE(global_mouse_pos_lag_behind_touch_event); j++) {
+                const char *s = global_mouse_pos_lag_behind_touch_event[j];
+                if(strncmp(sdl_backend, s, strlen(s)) == 0) {
+                    bd->ShouldWorkaroundGlobalMousePosIssue = true;
+                    break;
+                }
+            }
+#endif
+            break;
+        }
+    }
 #endif
 
     // Setup backend capabilities flags
-    ImGui_ImplSDL2_Data* bd = IM_NEW(ImGui_ImplSDL2_Data)();
     io.BackendPlatformUserData = (void*)bd;
     io.BackendPlatformName = "imgui_impl_sdl";
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;       // We can honor GetMouseCursor() values (optional)
@@ -192,6 +231,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
 
     bd->Window = window;
     bd->MouseCanUseGlobalState = mouse_can_use_global_state;
+    bd->Touched = false;
 
     // Keyboard mapping. Dear ImGui will use those indices to peek into the io.KeysDown[] array.
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
@@ -336,7 +376,7 @@ static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
         SDL_WarpMouseInWindow(bd->Window, (int)mouse_pos_prev.x, (int)mouse_pos_prev.y);
 
     // Set Dear ImGui mouse position from OS position + get buttons. (this is the common behavior)
-    if (bd->MouseCanUseGlobalState)
+    if (bd->MouseCanUseGlobalState && !bd->Touched)
     {
         // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
         // Unlike local position obtained earlier this will be valid when straying out of bounds.

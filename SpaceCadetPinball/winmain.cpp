@@ -78,6 +78,13 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 		return 1;
 	}
 
+#ifdef SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH
+	SDL_SetHint(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "0");
+#endif
+#ifdef SDL_HINT_TOUCH_MOUSE_EVENTS
+	SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+#endif
+
 	// If HW fails, fallback to SW SDL renderer.
 	SDL_Renderer* renderer = nullptr;
 	auto swOffset = strstr(lpCmdLine, "-sw") != nullptr ? 1 : 0;
@@ -764,12 +771,14 @@ int winmain::event_handler(const SDL_Event* event)
 		}
 		switch (event->type)
 		{
-		case SDL_MOUSEMOTION:
-		case SDL_MOUSEBUTTONDOWN:
-		case SDL_MOUSEBUTTONUP:
-		case SDL_MOUSEWHEEL:
-			return 1;
-		default: ;
+			case SDL_MOUSEMOTION:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEWHEEL:
+			case SDL_FINGERDOWN:
+			case SDL_FINGERUP:
+			case SDL_FINGERMOTION:
+				return 1;
 		}
 	}
 	if (ImIO->WantCaptureKeyboard && !options::WaitingForInput())
@@ -876,6 +885,7 @@ int winmain::event_handler(const SDL_Event* event)
 		}
 		break;
 	case SDL_MOUSEBUTTONDOWN:
+	case SDL_FINGERDOWN:
 		{
 			bool noInput = false;
 			switch (event->button.button)
@@ -899,6 +909,7 @@ int winmain::event_handler(const SDL_Event* event)
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
+	case SDL_FINGERUP:
 		{
 			bool noInput = false;
 			switch (event->button.button)

@@ -1,34 +1,30 @@
-// SpaceCadetPinball.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// SpaceCadetPinball.cpp : Program execution begins and ends there.
 
 #include "pch.h"
-
 #include "winmain.h"
 
-int MainActual(LPCSTR lpCmdLine)
-{
-	// Todo: get rid of restart to change resolution.
-	int returnCode;
-	do
-	{
-		returnCode = winmain::WinMain(lpCmdLine);
-	}
-	while (winmain::RestartRequested());
-	return returnCode;
+static int Main(const char *command_line) {
+	// TODO: get rid of restart to change resolution.
+	int r;
+	do {
+		r = winmain::WinMain(command_line);
+	} while (winmain::RestartRequested());
+	return r;
 }
 
 #if _WIN32
+
 #include <windows.h>
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	return MainActual(lpCmdLine);
+	return Main(lpCmdLine);
 }
 
 // fopen to _wfopen adapter, for UTF-8 paths
 FILE* fopenu(const char* path, const char* opt)
 {
-	wchar_t* wideArgs[2]{};
+	wchar_t *wideArgs[2] = { NULL };
 	for (auto& arg : wideArgs)
 	{
 		auto src = wideArgs[0] ? opt : path;
@@ -36,34 +32,21 @@ FILE* fopenu(const char* path, const char* opt)
 		arg = new wchar_t[length];
 		MultiByteToWideChar(CP_UTF8, 0, src, -1, arg, length);
 	}
-
-	auto fileHandle = _wfopen(wideArgs[0], wideArgs[1]);
-	for (auto arg : wideArgs)
-		delete[] arg;
-
-	return fileHandle;
+	FILE *f = _wfopen(wideArgs[0], wideArgs[1]);
+	for (auto arg : wideArgs) delete[] arg;
+	return f;
 }
 
 #else
 
 int main(int argc, char* argv[])
 {
-	std::string cmdLine;
-	for (int i = 1; i < argc; i++)
-		cmdLine += argv[i];
-
-	return MainActual(cmdLine.c_str());
+	std::string command_line;
+	for (int i = 1; i < argc; i++) {
+		if(i > 1) command_line += ' ';
+		command_line += argv[i];
+	}
+	return Main(command_line.c_str());
 }
 
 #endif
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

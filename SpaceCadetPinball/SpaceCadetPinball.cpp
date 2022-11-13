@@ -25,15 +25,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 FILE* fopenu(const char* path, const char* opt)
 {
 	wchar_t *wideArgs[2] = { NULL };
-	for (auto& arg : wideArgs)
+	for (wchar_t *&arg : wideArgs)
 	{
-		auto src = wideArgs[0] ? opt : path;
-		auto length = MultiByteToWideChar(CP_UTF8, 0, src, -1, nullptr, 0);
+		const char *src = wideArgs[0] ? opt : path;
+		int length = MultiByteToWideChar(CP_UTF8, 0, src, -1, nullptr, 0);
 		arg = new wchar_t[length];
 		MultiByteToWideChar(CP_UTF8, 0, src, -1, arg, length);
 	}
 	FILE *f = _wfopen(wideArgs[0], wideArgs[1]);
-	for (auto arg : wideArgs) delete[] arg;
+	for (wchar_t *arg : wideArgs) delete[] arg;
 	return f;
 }
 

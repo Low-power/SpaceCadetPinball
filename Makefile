@@ -72,6 +72,7 @@ OBJECTS := \
 	SpaceCadetPinball/DebugOverlay.o
 
 bin/SpaceCadetPinball:	$(OBJECTS)
+	[ -d $(@D) ] || mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@ -l SDL2 -l SDL2_mixer $(LIBS)
 
 clean:

@@ -6234,6 +6234,12 @@ const TextArray translations::Translations =
 		},
 	},
 	{
+		Msg::Menu1_Pause_On_Focus_Lost,
+		{
+			{ Lang::English, "Pause on Focus Lost" },
+		}
+	},
+	{
 		Msg::Menu1_Help,
 		{
 			{ Lang::Arabic, "تعليمات" },

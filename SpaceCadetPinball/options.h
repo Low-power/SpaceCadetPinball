@@ -27,6 +27,7 @@ enum class Menu1:int
 	ThreePlayers = 410,
 	FourPlayers = 411,
 	Show_Menu = 412,
+	Pause_On_Focus_Lost = 413,
 	MaximumResolution = 500,
 	R640x480 = 501,
 	R800x600 = 502,
@@ -73,6 +74,7 @@ struct optionsStruct
 	bool Sounds;
 	bool Music;
 	bool FullScreen;
+	bool PauseOnFocusLost;
 	int Players;
 	int Resolution;
 	bool UniformScaling;

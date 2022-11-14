@@ -90,6 +90,7 @@ void options::InitPrimary()
 	Options.Sounds = get_int("Sounds", true);
 	Options.Music = get_int("Music", false);
 	Options.FullScreen = get_int("FullScreen", false);
+	Options.PauseOnFocusLost = get_int("PauseOnFocusLost", true);
 	Options.Players = get_int("Players", 1);
 	Options.UniformScaling = get_int("Uniform scaling", true);
 	ImGui::GetIO().FontGlobalScale = get_float("UI Scale", 1.0f);
@@ -142,6 +143,7 @@ void options::uninit()
 	set_int("Sounds", Options.Sounds);
 	set_int("Music", Options.Music);
 	set_int("FullScreen", Options.FullScreen);
+	set_int("PauseOnFocusLost", Options.PauseOnFocusLost);
 	set_int("Players", Options.Players);
 	set_int("Screen Resolution", Options.Resolution);
 	set_int("Uniform scaling", Options.UniformScaling);
@@ -272,6 +274,9 @@ void options::toggle(Menu1 uIDCheckItem)
 		Options.FullScreen ^= true;
 		fullscrn::set_screen_mode(Options.FullScreen);
 		return;
+	case Menu1::Pause_On_Focus_Lost:
+		Options.PauseOnFocusLost = !Options.PauseOnFocusLost;
+		break;
 	case Menu1::OnePlayer:
 	case Menu1::TwoPlayers:
 	case Menu1::ThreePlayers:

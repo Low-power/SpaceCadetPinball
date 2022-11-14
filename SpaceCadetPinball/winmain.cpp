@@ -483,6 +483,9 @@ void winmain::RenderUi()
 			{
 				options::toggle(Menu1::Full_Screen);
 			}
+			if(ImGui::MenuItem(pb::get_rc_string(Msg::Menu1_Pause_On_Focus_Lost), nullptr, Options.PauseOnFocusLost)) {
+				options::toggle(Menu1::Pause_On_Focus_Lost);
+			}
 			if (ImGui::BeginMenu(pb::get_rc_string(Msg::Menu1_Select_Players)))
 			{
 				if (ImGui::MenuItem(pb::get_rc_string(Msg::Menu1_1Player), nullptr, Options.Players == 1))
@@ -934,7 +937,6 @@ int winmain::event_handler(const SDL_Event* event)
 		switch (event->window.event)
 		{
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
-		//case SDL_WINDOWEVENT_TAKE_FOCUS:
 		case SDL_WINDOWEVENT_SHOWN:
 			activated = true;
 			Sound::Activate();
@@ -944,6 +946,7 @@ int winmain::event_handler(const SDL_Event* event)
 			has_focus = true;
 			break;
 		case SDL_WINDOWEVENT_FOCUS_LOST:
+			if(!Options.PauseOnFocusLost) break;
 		case SDL_WINDOWEVENT_HIDDEN:
 			activated = false;
 			fullscrn::activate(0);
@@ -957,7 +960,6 @@ int winmain::event_handler(const SDL_Event* event)
 		case SDL_WINDOWEVENT_RESIZED:
 			fullscrn::window_size_changed();
 			break;
-		default: ;
 		}
 		break;
 	case SDL_JOYDEVICEADDED:

@@ -105,4 +105,5 @@ private:
 	static void RenderUi();
 	static void RenderFrameTimeDialog();
 	static void HybridSleep(DurationMs seconds);
+	static void report_error(const char *, const char *, SDL_Window *);
 };

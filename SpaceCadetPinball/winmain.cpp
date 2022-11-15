@@ -57,7 +57,7 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO |
 		SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Could not initialize SDL2", SDL_GetError(), nullptr);
+		report_error("Could not initialize SDL2", SDL_GetError(), nullptr);
 		return 1;
 	}
 
@@ -74,7 +74,7 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 	MainWindow = window;
 	if (!window)
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Could not create window", SDL_GetError(), nullptr);
+		report_error("Could not create window", SDL_GetError(), nullptr);
 		return 1;
 	}
 
@@ -99,7 +99,7 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 	}
 	if (!renderer)
 	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Could not create renderer", SDL_GetError(), window);
+		report_error("Could not create renderer", SDL_GetError(), window);
 		return 1;
 	}
 	SDL_RendererInfo rendererInfo{};
@@ -190,8 +190,7 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 				message = message + (path[0] ? path : "working directory") + "\n";
 			}
 		}
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Could not load game data",
-		                         message.c_str(), window);
+		report_error("Could not load game data", message.c_str(), window);
 		return 1;
 	}
 
@@ -1029,13 +1028,18 @@ int winmain::ProcessWindowMessages()
 	return 1;
 }
 
+void winmain::report_error(const char *title, const char *message, SDL_Window *parent_window) {
+	std::cerr << title << ", " << message << std::endl;
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, parent_window);
+}
+
 void winmain::memalloc_failure()
 {
 	midi::music_stop();
 	Sound::Close();
 	const char* caption = pb::get_rc_string(Msg::STRING270);
 	const char* text = pb::get_rc_string(Msg::STRING279);
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, caption, text, MainWindow);
+	report_error(caption, text, MainWindow);
 	std::exit(1);
 }
 

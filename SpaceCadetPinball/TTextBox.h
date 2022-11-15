@@ -17,12 +17,14 @@ public:
 	TTextBoxMessage* CurrentMessage;
 	TTextBoxMessage* PreviousMessage;
 
-	TTextBox(TPinballTable* table, int groupIndex);
+	TTextBox(TPinballTable *, int, std::ostream *);
+	TTextBox(TPinballTable *, int);
 	~TTextBox() override;
 	int Message(MessageCode code, float value) override;
 	void Clear();
 	void Display(const char* text, float time);
 	void DrawImGui();
+	void SetLogStream(std::ostream *);
 
 private:
 	struct LayoutResult
@@ -30,6 +32,8 @@ private:
 		char *Start, *End;
 		int Width;
 	};
+
+	std::ostream *log_to;
 
 	static void TimerExpired(int timerId, void* caller);
 

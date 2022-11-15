@@ -186,6 +186,7 @@ TPinballTable::TPinballTable(): TPinballComponent(nullptr, -1, false)
 
 	render::build_occlude_list();
 	pb::InfoTextBox = dynamic_cast<TTextBox*>(find_component("info_text_box"));
+	pb::InfoTextBox->SetLogStream(&std::cerr);
 	pb::MissTextBox = dynamic_cast<TTextBox*>(find_component("mission_text_box"));
 	control::make_links(this);
 }

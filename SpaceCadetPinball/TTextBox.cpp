@@ -10,7 +10,7 @@
 #include "timer.h"
 
 
-TTextBox::TTextBox(TPinballTable* table, int groupIndex) : TPinballComponent(table, groupIndex, true)
+TTextBox::TTextBox(TPinballTable *table, int groupIndex, std::ostream *log_to) : TPinballComponent(table, groupIndex, true)
 {
 	OffsetX = 0;
 	OffsetY = 0;
@@ -32,6 +32,11 @@ TTextBox::TTextBox(TPinballTable* table, int groupIndex) : TPinballComponent(tab
 		Width = dimensions[2];
 		Height = dimensions[3];
 	}
+
+	this->log_to = log_to;
+}
+
+TTextBox::TTextBox(TPinballTable *table, int group_index) : TTextBox(table, group_index, nullptr) {
 }
 
 TTextBox::~TTextBox()
@@ -103,8 +108,7 @@ void TTextBox::Clear()
 
 void TTextBox::Display(const char* text, float time)
 {
-	if (!text)
-		return;
+	if (!text) return;
 
 	if (CurrentMessage && !strcmp(text, PreviousMessage->Text))
 	{
@@ -143,6 +147,8 @@ void TTextBox::Display(const char* text, float time)
 			}
 		}
 	}
+
+	if(log_to) *log_to << text << std::endl;
 }
 
 void TTextBox::DrawImGui()
@@ -182,6 +188,10 @@ void TTextBox::DrawImGui()
 		ImGui::PopStyleColor();
 	}
 	ImGui::End();
+}
+
+void TTextBox::SetLogStream(std::ostream *s) {
+	log_to = s;
 }
 
 void TTextBox::Draw()
